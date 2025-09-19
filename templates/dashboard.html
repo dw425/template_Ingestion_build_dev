@@ -46,6 +46,49 @@
                         </button>
                     </div>
                     <div id="file-info" class="mt-4 hidden">
+                        <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-file text-blue-600 mr-2"></i>
+                                <span id="file-name" class="text-sm font-medium text-blue-800"></span>
+                            </div>
+                            <button id="upload-btn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200">
+                                <i class="fas fa-play mr-2"></i>Analyze
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading Section -->
+            <div id="loading-section" class="hidden mb-8">
+                <div class="bg-white rounded-lg shadow p-6 text-center">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p class="text-lg text-gray-600">Analyzing your data...</p>
+                    <p class="text-sm text-gray-500">This may take a few moments</p>
+                </div>
+            </div>
+
+            <!-- Dashboard Content -->
+            <div id="dashboard-content" class="hidden">
+                <!-- Summary Cards -->
+                <div id="summary-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <!-- Cards will be populated by JavaScript -->
+                </div>
+
+                <!-- Charts Section -->
+                <div id="charts-section" class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    <!-- Charts will be populated by JavaScript -->
+                </div>
+
+                <!-- Insights Section -->
+                <div id="insights-section" class="mb-8">
+                    <div class="bg-white rounded-lg shadow">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-900">
+                                <i class="fas fa-lightbulb mr-2 text-yellow-500"></i>
+                                Key Insights
+                            </h3>
+                        </div>
                         <div id="insights-container" class="p-6 space-y-4">
                             <!-- Insights will be populated by JavaScript -->
                         </div>
@@ -116,47 +159,4 @@
         setInterval(updateTime, 1000);
     </script>
 </body>
-</html> class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                            <div class="flex items-center">
-                                <i class="fas fa-file text-blue-600 mr-2"></i>
-                                <span id="file-name" class="text-sm font-medium text-blue-800"></span>
-                            </div>
-                            <button id="upload-btn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200">
-                                <i class="fas fa-play mr-2"></i>Analyze
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Loading Section -->
-            <div id="loading-section" class="hidden mb-8">
-                <div class="bg-white rounded-lg shadow p-6 text-center">
-                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                    <p class="text-lg text-gray-600">Analyzing your data...</p>
-                    <p class="text-sm text-gray-500">This may take a few moments</p>
-                </div>
-            </div>
-
-            <!-- Dashboard Content -->
-            <div id="dashboard-content" class="hidden">
-                <!-- Summary Cards -->
-                <div id="summary-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <!-- Cards will be populated by JavaScript -->
-                </div>
-
-                <!-- Charts Section -->
-                <div id="charts-section" class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                    <!-- Charts will be populated by JavaScript -->
-                </div>
-
-                <!-- Insights Section -->
-                <div id="insights-section" class="mb-8">
-                    <div class="bg-white rounded-lg shadow">
-                        <div class="px-6 py-4 border-b border-gray-200">
-                            <h3 class="text-lg font-semibold text-gray-900">
-                                <i class="fas fa-lightbulb mr-2 text-yellow-500"></i>
-                                Key Insights
-                            </h3>
-                        </div>
-                        <div
+</html>
