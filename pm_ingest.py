@@ -1,42 +1,22 @@
-from fastapi import FastAPI
-from fastapi.responses import HTMLResponse, JSONResponse
-import uvicorn
 import os
+from fastapi import FastAPI
+import uvicorn
 
-app = FastAPI(title="PM Intelligence Test")
+app = FastAPI()
 
 @app.get("/")
-async def root():
-    return {"message": "PM Intelligence Dashboard is working!", "status": "success"}
-
-@app.get("/test", response_class=HTMLResponse)
-async def test_html():
-    return """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>PM Intelligence Test</title>
-        <style>
-            body { font-family: Arial, sans-serif; margin: 40px; background: #f0f0f0; }
-            .container { max-width: 800px; margin: 0 auto; background: white; padding: 40px; border-radius: 10px; }
-            h1 { color: #4f46e5; }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>PM Intelligence Dashboard - Test Page</h1>
-            <p>If you can see this page, the FastAPI app is working correctly!</p>
-            <p><strong>Next steps:</strong> We can now add back the full functionality step by step.</p>
-            <a href="/">Back to API Response</a>
-        </div>
-    </body>
-    </html>
-    """
+def read_root():
+    return {"message": "PM Intelligence Dashboard", "status": "healthy"}
 
 @app.get("/health")
-async def health_check():
-    return {"status": "healthy", "message": "PM Intelligence API is running"}
+def health_check():
+    return {"status": "ok"}
+
+@app.get("/healthz")
+def health_check_k8s():
+    return {"status": "ok"}
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
+    print(f"Starting server on port {port}")
     uvicorn.run(app, host="0.0.0.0", port=port)
