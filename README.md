@@ -1,2 +1,0 @@
-# template_Ingestion_build_dev
-template ingestion build development enviorment
