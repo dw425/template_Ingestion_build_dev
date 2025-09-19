@@ -14,8 +14,33 @@ class SpreadsheetAnalyzer:
             # Read file based on extension
             if filepath.endswith('.csv'):
                 self.data = pd.read_csv(filepath)
+            elif filepath.endswith('.json'):
+                # Handle JSON files
+                with open(filepath, 'r', encoding='utf-8') as f:
+                    json_data = json.load(f)
+                
+                # Convert JSON to DataFrame
+                if isinstance(json_data, list):
+                    # If JSON is a list of objects
+                    self.data = pd.DataFrame(json_data)
+                elif isinstance(json_data, dict):
+                    # Check if it's a nested structure with data arrays
+                    if 'issues' in json_data:  # JIRA export format
+                        self.data = pd.DataFrame(json_data['issues'])
+                    elif 'data' in json_data:  # Generic data wrapper
+                        self.data = pd.DataFrame(json_data['data'])
+                    else:
+                        # Try to normalize the dictionary
+                        self.data = pd.json_normalize(json_data)
+                else:
+                    raise Exception("JSON format not supported - must be list of objects or dictionary")
+                    
             else:  # xlsx, xls
                 self.data = pd.read_excel(filepath)
+            
+            # Ensure we have data
+            if self.data.empty:
+                raise Exception("No data found in file")
             
             # Perform comprehensive analysis
             self.analysis_results = {
@@ -62,8 +87,8 @@ class SpreadsheetAnalyzer:
         task_analysis = {}
         
         # Look for common task-related column names
-        task_columns = self._find_columns(['task', 'title', 'summary', 'description', 'issue'])
-        status_columns = self._find_columns(['status', 'state', 'progress'])
+        task_columns = self._find_columns(['task', 'title', 'summary', 'description', 'issue', 'key', 'subject'])
+        status_columns = self._find_columns(['status', 'state', 'progress', 'resolution'])
         priority_columns = self._find_columns(['priority', 'severity', 'importance'])
         
         if task_columns:
@@ -136,7 +161,7 @@ class SpreadsheetAnalyzer:
         team_analysis = {}
         
         # Look for assignee/team member columns
-        assignee_columns = self._find_columns(['assignee', 'assigned', 'owner', 'responsible', 'team'])
+        assignee_columns = self._find_columns(['assignee', 'assigned', 'owner', 'responsible', 'team', 'reporter', 'creator'])
         
         if assignee_columns:
             assignee_col = assignee_columns[0]
