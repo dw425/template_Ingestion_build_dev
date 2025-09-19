@@ -1,0 +1,112 @@
+/* Custom styles for PM Analysis Dashboard */
+
+/* Drop zone hover effects */
+#drop-zone.dragover {
+    border-color: #3B82F6;
+    background-color: #EFF6FF;
+}
+
+/* Chart containers */
+.chart-container {
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+}
+
+/* Summary cards animations */
+.summary-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Insight cards */
+.insight-card {
+    border-left: 4px solid;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.insight-card.success {
+    border-left-color: #10B981;
+    background-color: #ECFDF5;
+}
+
+.insight-card.warning {
+    border-left-color: #F59E0B;
+    background-color: #FFFBEB;
+}
+
+.insight-card.info {
+    border-left-color: #3B82F6;
+    background-color: #EFF6FF;
+}
+
+.insight-card.error {
+    border-left-color: #EF4444;
+    background-color: #FEF2F2;
+}
+
+/* Loading animation */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: .5;
+    }
+}
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* File upload styles */
+.file-upload-progress {
+    width: 100%;
+    height: 4px;
+    background-color: #E5E7EB;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.file-upload-progress-bar {
+    height: 100%;
+    background-color: #3B82F6;
+    transition: width 0.3s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .chart-container {
+        padding: 1rem;
+    }
+    
+    #charts-section {
+        grid-template-columns: 1fr;
+    }
+    
+    #summary-cards {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    body {
+        background: white !important;
+    }
+    
+    .shadow {
+        box-shadow: none !important;
+    }
+}
