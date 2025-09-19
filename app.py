@@ -8,10 +8,12 @@ from analyzers.report_generator import ReportGenerator
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
+# Ensure upload directory exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
+# Allowed file extensions
 ALLOWED_EXTENSIONS = {'xlsx', 'xls', 'csv', 'json'}
 
 def allowed_file(filename):
@@ -19,10 +21,12 @@ def allowed_file(filename):
 
 @app.route('/')
 def dashboard():
+    """Main dashboard page"""
     return render_template('dashboard.html')
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
+    """Handle file uploads and trigger analysis"""
     if 'file' not in request.files:
         return jsonify({'error': 'No file selected'}), 400
     
@@ -35,13 +39,16 @@ def upload_file():
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
         
+        # Analyze the file
         try:
             analyzer = SpreadsheetAnalyzer()
             analysis_results = analyzer.analyze_file(filepath)
             
+            # Generate report
             report_gen = ReportGenerator()
             dashboard_data = report_gen.generate_dashboard_data(analysis_results)
             
+            # Clean up uploaded file
             os.remove(filepath)
             
             return jsonify({
@@ -50,6 +57,7 @@ def upload_file():
             })
             
         except Exception as e:
+            # Clean up on error
             if os.path.exists(filepath):
                 os.remove(filepath)
             return jsonify({'error': f'Analysis failed: {str(e)}'}), 500
@@ -58,6 +66,7 @@ def upload_file():
 
 @app.route('/health')
 def health_check():
+    """Health check endpoint for Railway"""
     return {'status': 'healthy'}
 
 if __name__ == '__main__':
