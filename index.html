@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PM Intelligence Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+
+        .main-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .card-header h2 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .card-header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .upload-area {
+            padding: 40px;
+            text-align: center;
+        }
+
+        .file-drop-zone {
+            border: 3px dashed #cbd5e1;
+            border-radius: 15px;
+            padding: 60px 20px;
+            background: #f8fafc;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .file-drop-zone:hover, .file-drop-zone.dragover {
+            border-color: #4f46e5;
+            background: #f0f4ff;
+            transform: translateY(-2px);
+        }
+
+        .upload-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+        }
+
+        .upload-text h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #1e293b;
+        }
+
+        .upload-text p {
+            color: #64748b;
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+        }
+
+        .file-list {
+            margin-top: 30px;
+            text-align: left;
+            display: none;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f1f5f9;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .file-item:hover {
+            background: #e2e8f0;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .file-icon {
+            width: 40px;
+            height: 40px;
+            background: #4f46e5;
+            color: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+
+        .file-details h4 {
+            font-size: 1rem;
+            margin-bottom: 2px;
+            color: #1e293b;
+        }
+
+        .file-details p {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .remove-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+
+        .remove-btn:hover {
+            background: #dc2626;
+        }
+
+        .process-section {
+            padding: 30px 40px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .process-btn {
+            background: linear-gradient(135deg, #059669, #10b981);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3);
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        .process-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(5, 150, 105, 0.4);
+        }
+
+        .process-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .progress-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #059669, #10b981);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        .results-section {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-left: 4px solid #4f46e5;
+        }
+
+        .result-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #4f46e5;
+            margin-bottom: 5px;
+        }
+
+        .result-label {
+            color: #64748b;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            background: white;
+            color: #4f46e5;
+            border: 2px solid #4f46e5;
+            padding: 12px 24px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .action-btn:hover {
+            background: #4f46e5;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 1.5rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 15px;
+            color: #1e293b;
+        }
+
+        .feature-card p {
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .status-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .status-success {
+            border-left: 4px solid #10b981;
+            color: #065f46;
+        }
+
+        .status-error {
+            border-left: 4px solid #ef4444;
+            color: #991b1b;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .upload-area {
+                padding: 20px;
+            }
+            
+            .file-drop-zone {
+                padding: 40px 15px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .action-btn {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="status-indicator" id="statusIndicator"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1>PM Intelligence Dashboard</h1>
+            <p>Intelligent project management data ingestion and analysis platform</p>
+        </div>
+
+        <div class="main-card">
+            <div class="card-header">
+                <h2>📁 File Ingestion Interface</h2>
+                <p>Upload your project files for intelligent processing and analysis</p>
+            </div>
+
+            <div class="upload-area">
+                <div class="file-drop-zone" id="dropZone">
+                    <div class="upload-icon">📤</div>
+                    <div class="upload-text">
+                        <h3>Drop files here or click to browse</h3>
+                        <p>Supports Excel (.xlsx, .xls), CSV, JSON, PowerPoint (.pptx), and text files</p>
+                        <button class="upload-btn" onclick="event.stopPropagation(); document.getElementById('fileInput').click();">
+                            Choose Files
+                        </button>
+                    </div>
+                </div>
+                
+                <input type="file" id="fileInput" class="file-input" multiple 
+                       accept=".xlsx,.xls,.csv,.json,.pptx,.txt,.docx">
+
+                <div class="file-list" id="fileList">
+                    <h3 style="margin-bottom: 15px; color: #1e293b;">Selected Files:</h3>
+                    <div id="fileItems"></div>
+                </div>
+            </div>
+
+            <div class="process-section">
+                <button class="process-btn" id="processBtn" disabled onclick="processFiles()">
+                    🚀 Process Files
+                </button>
+                
+                <div class="progress-container" id="progressContainer">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">Processing files...</div>
+                </div>
+
+                <div class="results-section" id="resultsSection">
+                    <div class="results-grid" id="resultsGrid"></div>
+                    <div class="action-buttons">
+                        <a href="/dashboard" class="action-btn">📊 View Analytics Dashboard</a>
+                        <a href="/processed-data-summary" class="action-btn">📋 View Data Summary</a>
+                        <button class="action-btn" onclick="resetInterface()">🔄 Process More Files</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🔍</div>
+                <h3>Intelligent Analysis</h3>
+                <p>Advanced file processing with smart content extraction and validation for comprehensive project insights.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Real-time Dashboard</h3>
+                <p>Live analytics dashboard with KPI tracking, project health monitoring, and actionable recommendations.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Fast Processing</h3>
+                <p>High-performance file ingestion engine that handles multiple formats with lightning-fast processing speeds.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFiles = [];
+        
+        // File input handling
+        const fileInput = document.getElementById('fileInput');
+        const dropZone = document.getElementById('dropZone');
+        const fileList = document.getElementById('fileList');
+        const fileItems = document.getElementById('fileItems');
+        const processBtn = document.getElementById('processBtn');
+
+        // Drag and drop functionality
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const files = Array.from(e.dataTransfer.files);
+            addFiles(files);
+        });
+
+        dropZone.addEventListener('click', (e) => {
+            e.stopPropagation();
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            if (files.length > 0) {
+                addFiles(files);
+                e.target.value = '';
+            }
+        });
+
+        function addFiles(files) {
+            console.log('Adding files:', files.map(f => f.name));
+            
+            files.forEach(file => {
+                const existingFile = selectedFiles.find(f => f.name === file.name && f.size === file.size);
+                if (!existingFile) {
+                    selectedFiles.push(file);
+                    console.log('Added:', file.name);
+                } else {
+                    console.log('Skipped duplicate:', file.name);
+                }
+            });
+            
+            updateFileList();
+        }
+
+        function removeFile(index) {
+            const removedFile = selectedFiles[index];
+            selectedFiles.splice(index, 1);
+            console.log('Removed:', removedFile.name);
+            updateFileList();
+        }
+
+        function updateFileList() {
+            if (selectedFiles.length === 0) {
+                fileList.style.display = 'none';
+                processBtn.disabled = true;
+                return;
+            }
+
+            fileList.style.display = 'block';
+            processBtn.disabled = false;
+
+            fileItems.innerHTML = selectedFiles.map((file, index) => {
+                const fileExtension = file.name.split('.').pop().toUpperCase();
+                const fileSize = formatFileSize(file.size);
+                
+                return `
+                    <div class="file-item">
+                        <div class="file-info">
+                            <div class="file-icon">${fileExtension}</div>
+                            <div class="file-details">
+                                <h4>${escapeHtml(file.name)}</h4>
+                                <p>${fileSize}</p>
+                            </div>
+                        </div>
+                        <button class="remove-btn" onclick="removeFile(${index})">Remove</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showStatus(message, isError = false) {
+            const indicator = document.getElementById('statusIndicator');
+            indicator.textContent = message;
+            indicator.className = 'status-indicator ' + (isError ? 'status-error' : 'status-success');
+            indicator.style.display = 'block';
+            
+            setTimeout(() => {
+                indicator.style.display = 'none';
+            }, 3000);
+        }
+
+        async function processFiles() {
+            if (selectedFiles.length === 0) {
+                showStatus('Please select files first', true);
+                return;
+            }
+
+            console.log('Starting file processing...');
+            document.getElementById('progressContainer').style.display = 'block';
+            processBtn.disabled = true;
+            processBtn.textContent = 'Processing...';
+
+            const formData = new FormData();
+            selectedFiles.forEach((file, index) => {
+                formData.append('files', file);
+                console.log(`Added to FormData: ${file.name} (${file.size} bytes)`);
+            });
+
+            try {
+                // Simulate progress
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += Math.random() * 15;
+                    if (progress > 90) progress = 90;
+                    updateProgress(progress);
+                }, 500);
+
+                console.log('Sending request to /upload-files...');
+                
+                const response = await fetch('/upload-files', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                clearInterval(progressInterval);
+                updateProgress(100);
+
+                console.log('Response status:', response.status);
+
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('Processing result:', result);
+                    showResults(result);
+                    showStatus('Files processed successfully!');
+                } else {
+                    const errorText = await response.text();
+                    console.error('Server error:', errorText);
+                    throw new Error(`Server error: ${response.status} - ${errorText}`);
+                }
+            } catch (error) {
+                console.error('Error processing files:', error);
+                showStatus(`Error: ${error.message}`, true);
+                resetProcessing();
+            }
+        }
+
+        function updateProgress(percent) {
+            document.getElementById('progressFill').style.width = percent + '%';
+            document.getElementById('progressText').textContent = 
+                percent < 100 ? `Processing files... ${Math.round(percent)}%` : 'Complete!';
+        }
+
+        function showResults(results) {
+            const resultsSection = document.getElementById('resultsSection');
+            const resultsGrid = document.getElementById('resultsGrid');
+
+            const successRate = results.total_files > 0 ? 
+                Math.round((results.successful_files / results.total_files) * 100) : 0;
+
+            resultsGrid.innerHTML = `
+                <div class="result-card">
+                    <div class="result-number">${results.total_files || selectedFiles.length}</div>
+                    <div class="result-label">Files Processed</div>
+                </div>
+                <div class="result-card">
+                    <div class="result-number">${results.successful_files || 0}</div>
+                    <div class="result-label">Successful</div>
+                </div>
+                <div class="result-card">
+                    <div class="result-number">${results.failed_files || 0}</div>
+                    <div class="result-label">Failed</div>
+                </div>
+                <div class="result-card">
+                    <div class="result-number">${successRate}%</div>
+                    <div class="result-label">Success Rate</div>
+                </div>
+            `;
+
+            resultsSection.style.display = 'block';
+            
+            setTimeout(() => {
+                document.getElementById('progressContainer').style.display = 'none';
+            }, 1000);
+        }
+
+        function resetInterface() {
+            selectedFiles = [];
+            document.getElementById('fileInput').value = '';
+            updateFileList();
+            resetProcessing();
+            document.getElementById('resultsSection').style.display = 'none';
+            console.log('Interface reset');
+        }
+
+        function resetProcessing() {
+            processBtn.disabled = true;
+            processBtn.textContent = '🚀 Process Files';
+            document.getElementById('progressContainer').style.display = 'none';
+            document.getElementById('progressFill').style.width = '0%';
+        }
+
+        // Initialize
+        updateFileList();
+        console.log('PM Intelligence Dashboard initialized');
+    </script>
+</body>
+</html>
