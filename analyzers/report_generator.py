@@ -7,13 +7,37 @@ class ReportGenerator:
     def __init__(self):
         pass
     
-    def generate_dashboard_data(self, analysis_results):
+    def generate_dashboard_data(self, analysis_results, analysis_type="spreadsheet"):
         """Generate dashboard data from analysis results"""
+        
+        if analysis_type == "document":
+            return self._generate_document_dashboard_data(analysis_results)
+        else:
+            return self._generate_spreadsheet_dashboard_data(analysis_results)
+    
+    def _generate_spreadsheet_dashboard_data(self, analysis_results):
+        """Generate dashboard data for spreadsheet analysis"""
         dashboard_data = {
             'summary_cards': self._create_summary_cards(analysis_results),
             'charts': self._create_charts(analysis_results),
             'insights': self._generate_insights(analysis_results),
-            'raw_data': analysis_results
+            'raw_data': analysis_results,
+            'analysis_type': 'spreadsheet'
+        }
+        
+        return dashboard_data
+    
+    def _generate_document_dashboard_data(self, analysis_results):
+        """Generate dashboard data for AI document analysis"""
+        ai_analysis = analysis_results.get('ai_analysis', {})
+        
+        dashboard_data = {
+            'summary_cards': self._create_document_summary_cards(ai_analysis),
+            'charts': self._create_document_charts(ai_analysis),
+            'insights': self._generate_document_insights(ai_analysis),
+            'raw_data': analysis_results,
+            'analysis_type': 'document',
+            'ai_analysis': ai_analysis
         }
         
         return dashboard_data
