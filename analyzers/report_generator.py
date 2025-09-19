@@ -257,3 +257,271 @@ class ReportGenerator:
                     })
         
         return insights
+    
+    def _create_document_summary_cards(self, ai_analysis):
+        """Create summary cards for document analysis"""
+        cards = []
+        
+        # Project overview card
+        project_overview = ai_analysis.get('project_overview', {})
+        cards.append({
+            'title': 'Project Name',
+            'value': project_overview.get('project_name', 'Unknown')[:20],
+            'subtitle': project_overview.get('project_type', 'Unknown Type'),
+            'icon': 'project-diagram'
+        })
+        
+        # Timeline card
+        timeline_info = ai_analysis.get('timeline_info', {})
+        milestones_count = len(timeline_info.get('milestones', []))
+        cards.append({
+            'title': 'Milestones',
+            'value': str(milestones_count),
+            'subtitle': 'Key milestones identified',
+            'icon': 'calendar-alt'
+        })
+        
+        # Team card
+        team_info = ai_analysis.get('team_and_resources', {})
+        team_size = len(team_info.get('team_members', []))
+        cards.append({
+            'title': 'Team Members',
+            'value': str(team_size),
+            'subtitle': 'People identified',
+            'icon': 'users'
+        })
+        
+        # Confidence card
+        metadata = ai_analysis.get('document_metadata', {})
+        confidence = metadata.get('confidence_score', 0)
+        cards.append({
+            'title': 'AI Confidence',
+            'value': f"{confidence * 100:.0f}%",
+            'subtitle': 'Analysis accuracy',
+            'icon': 'brain'
+        })
+        
+        return cards
+    
+    def _create_document_charts(self, ai_analysis):
+        """Create charts for document analysis"""
+        charts = []
+        
+        # Status breakdown
+        status_info = ai_analysis.get('status_and_progress', {})
+        completed = len(status_info.get('completed_tasks', []))
+        in_progress = len(status_info.get('in_progress_tasks', []))
+        pending = len(status_info.get('pending_tasks', []))
+        
+        if completed + in_progress + pending > 0:
+            fig = go.Figure(data=[go.Pie(
+                labels=['Completed', 'In Progress', 'Pending'],
+                values=[completed, in_progress, pending],
+                hole=.3,
+                marker_colors=['#10B981', '#F59E0B', '#EF4444']
+            )])
+            
+            fig.update_layout(
+                title="Project Task Status",
+                font=dict(size=12),
+                height=400
+            )
+            
+            charts.append({
+                'id': 'document_status_chart',
+                'title': 'Task Status Distribution',
+                'type': 'pie',
+                'data': json.loads(plotly.utils.PlotlyJSONEncoder().encode(fig))
+            })
+        
+        # Team workload
+        team_info = ai_analysis.get('team_and_resources', {})
+        team_members = team_info.get('team_members', [])
+        
+        if team_members:
+            # Create a simple bar chart of team members
+            fig = go.Figure(data=[go.Bar(
+                x=team_members[:10],  # Limit to 10 members
+                y=[1] * len(team_members[:10]),  # Each person counts as 1
+                marker_color='lightblue'
+            )])
+            
+            fig.update_layout(
+                title="Team Members Identified",
+                xaxis_title="Team Member",
+                yaxis_title="Mentions",
+                font=dict(size=12),
+                height=400
+            )
+            
+            charts.append({
+                'id': 'document_team_chart',
+                'title': 'Team Members',
+                'type': 'bar',
+                'data': json.loads(plotly.utils.PlotlyJSONEncoder().encode(fig))
+            })
+        
+        # KPIs and Metrics
+        kpis = ai_analysis.get('kpis_and_metrics', {})
+        metrics = kpis.get('performance_metrics', [])
+        
+        if metrics:
+            # Create a horizontal bar chart of metrics
+            metric_names = [metric.split(':')[0] if ':' in metric else metric for metric in metrics[:8]]
+            metric_counts = [1] * len(metric_names)  # Each metric counts as 1
+            
+            fig = go.Figure(data=[go.Bar(
+                x=metric_counts,
+                y=metric_names,
+                orientation='h',
+                marker_color='lightgreen'
+            )])
+            
+            fig.update_layout(
+                title="Key Performance Indicators",
+                xaxis_title="Identified",
+                yaxis_title="KPI Type",
+                font=dict(size=12),
+                height=500
+            )
+            
+            charts.append({
+                'id': 'document_kpi_chart',
+                'title': 'Key Performance Indicators',
+                'type': 'bar',
+                'data': json.loads(plotly.utils.PlotlyJSONEncoder().encode(fig))
+            })
+        
+        return charts
+    
+    def _generate_document_insights(self, ai_analysis):
+        """Generate insights for document analysis"""
+        insights = []
+        
+        # Document quality insight
+        metadata = ai_analysis.get('document_metadata', {})
+        confidence = metadata.get('confidence_score', 0)
+        data_quality = metadata.get('data_quality', '')
+        
+        if confidence > 0.8:
+            insights.append({
+                'type': 'success',
+                'title': 'High Quality Analysis',
+                'message': f"AI analysis achieved {confidence*100:.0f}% confidence. {data_quality}"
+            })
+        elif confidence > 0.5:
+            insights.append({
+                'type': 'info',
+                'title': 'Moderate Analysis Quality',
+                'message': f"AI analysis achieved {confidence*100:.0f}% confidence. Some information may be incomplete."
+            })
+        else:
+            insights.append({
+                'type': 'warning',
+                'title': 'Limited Analysis Quality',
+                'message': f"AI analysis achieved only {confidence*100:.0f}% confidence. Consider uploading a clearer document."
+            })
+        
+        # Project timeline insights
+        timeline_info = ai_analysis.get('timeline_info', {})
+        start_date = timeline_info.get('start_date')
+        end_date = timeline_info.get('end_date')
+        milestones = timeline_info.get('milestones', [])
+        
+        if start_date and end_date:
+            insights.append({
+                'type': 'info',
+                'title': 'Project Timeline Identified',
+                'message': f"Project spans from {start_date} to {end_date} with {len(milestones)} milestones."
+            })
+        elif milestones:
+            insights.append({
+                'type': 'info',
+                'title': 'Milestones Found',
+                'message': f"Identified {len(milestones)} key milestones without clear start/end dates."
+            })
+        
+        # Team and resources insights
+        team_info = ai_analysis.get('team_and_resources', {})
+        team_members = team_info.get('team_members', [])
+        budget_info = team_info.get('budget_info', '')
+        
+        if len(team_members) > 10:
+            insights.append({
+                'type': 'info',
+                'title': 'Large Team Project',
+                'message': f"Large team identified with {len(team_members)} members. Consider coordination strategies."
+            })
+        elif len(team_members) < 3:
+            insights.append({
+                'type': 'warning',
+                'title': 'Small Team',
+                'message': f"Only {len(team_members)} team members identified. May need additional resources."
+            })
+        
+        if budget_info and budget_info != "Not available":
+            insights.append({
+                'type': 'success',
+                'title': 'Budget Information Available',
+                'message': f"Budget details found: {budget_info[:100]}..."
+            })
+        
+        # Status and progress insights
+        status_info = ai_analysis.get('status_and_progress', {})
+        completed_tasks = status_info.get('completed_tasks', [])
+        pending_tasks = status_info.get('pending_tasks', [])
+        risks_issues = status_info.get('risks_issues', [])
+        
+        total_tasks = len(completed_tasks) + len(status_info.get('in_progress_tasks', [])) + len(pending_tasks)
+        if total_tasks > 0:
+            completion_rate = (len(completed_tasks) / total_tasks) * 100
+            
+            if completion_rate > 80:
+                insights.append({
+                    'type': 'success',
+                    'title': 'High Progress Rate',
+                    'message': f"Project shows strong progress with {completion_rate:.1f}% of tasks completed."
+                })
+            elif completion_rate < 30:
+                insights.append({
+                    'type': 'warning',
+                    'title': 'Low Progress Rate',
+                    'message': f"Only {completion_rate:.1f}% of tasks completed. Consider acceleration strategies."
+                })
+        
+        if risks_issues:
+            insights.append({
+                'type': 'warning',
+                'title': 'Risks Identified',
+                'message': f"Found {len(risks_issues)} potential risks or issues requiring attention."
+            })
+        
+        # Key insights from AI analysis
+        key_insights = ai_analysis.get('key_insights', {})
+        concerns = key_insights.get('concerns', [])
+        recommendations = key_insights.get('recommendations', [])
+        
+        if recommendations:
+            insights.append({
+                'type': 'info',
+                'title': 'AI Recommendations',
+                'message': f"AI identified {len(recommendations)} recommendations for improvement."
+            })
+        
+        if concerns:
+            insights.append({
+                'type': 'warning',
+                'title': 'Areas of Concern',
+                'message': f"AI flagged {len(concerns)} areas requiring attention."
+            })
+        
+        # Missing information insights
+        missing_info = metadata.get('missing_information', [])
+        if missing_info:
+            insights.append({
+                'type': 'info',
+                'title': 'Information Gaps',
+                'message': f"Consider adding information about: {', '.join(missing_info[:3])}"
+            })
+        
+        return insights
