@@ -6,27 +6,44 @@ from typing import Dict, List, Any, Optional
 import PyPDF2
 from docx import Document
 from pptx import Presentation
-import openai
-import anthropic
-import tiktoken
+import requests
+
+try:
+    import openai
+    OPENAI_AVAILABLE = True
+except ImportError:
+    OPENAI_AVAILABLE = False
+
+try:
+    import anthropic
+    ANTHROPIC_AVAILABLE = True
+except ImportError:
+    ANTHROPIC_AVAILABLE = False
 
 class AIDocumentAnalyzer:
     def __init__(self):
         self.openai_client = None
         self.anthropic_client = None
+        self.gemini_api_key = None
         self.setup_ai_clients()
         
     def setup_ai_clients(self):
         """Setup AI clients based on available API keys"""
+        # OpenAI setup
         openai_key = os.getenv('OPENAI_API_KEY')
-        anthropic_key = os.getenv('ANTHROPIC_API_KEY')
-        
-        if openai_key:
+        if openai_key and OPENAI_AVAILABLE:
             openai.api_key = openai_key
             self.openai_client = openai
         
-        if anthropic_key:
+        # Anthropic setup
+        anthropic_key = os.getenv('ANTHROPIC_API_KEY')
+        if anthropic_key and ANTHROPIC_AVAILABLE:
             self.anthropic_client = anthropic.Anthropic(api_key=anthropic_key)
+        
+        # Gemini setup
+        gemini_key = os.getenv('GEMINI_API_KEY')
+        if gemini_key:
+            self.gemini_api_key = gemini_key
     
     def analyze_document(self, filepath: str) -> Dict[str, Any]:
         """Main entry point for document analysis"""
@@ -124,13 +141,18 @@ class AIDocumentAnalyzer:
         # Create analysis prompt
         analysis_prompt = self.create_analysis_prompt(text_content, filepath)
         
-        # Try Claude first, then OpenAI as fallback
+        # Try available AI services in order of preference
         if self.anthropic_client:
+            print("Using Anthropic Claude for analysis...")
             return self.analyze_with_claude(analysis_prompt)
+        elif self.gemini_api_key:
+            print("Using Google Gemini for analysis...")
+            return self.analyze_with_gemini(analysis_prompt)
         elif self.openai_client:
+            print("Using OpenAI for analysis...")
             return self.analyze_with_openai(analysis_prompt)
         else:
-            # Fallback to rule-based analysis
+            print("No AI API keys available, using rule-based analysis...")
             return self.rule_based_analysis(text_content)
     
     def create_analysis_prompt(self, text_content: str, filepath: str) -> str:
@@ -246,6 +268,41 @@ IMPORTANT:
         except Exception as e:
             print(f"OpenAI analysis failed: {str(e)}")
             return self.create_fallback_analysis("OpenAI API error")
+    
+    def analyze_with_gemini(self, prompt: str) -> Dict[str, Any]:
+        """Analyze using Google Gemini"""
+        try:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={self.gemini_api_key}"
+            
+            headers = {
+                'Content-Type': 'application/json',
+            }
+            
+            data = {
+                "contents": [{
+                    "parts": [{
+                        "text": f"You are an expert project management analyst. Analyze the following document and respond with valid JSON only.\n\n{prompt}"
+                    }]
+                }],
+                "generationConfig": {
+                    "temperature": 0.3,
+                    "maxOutputTokens": 4000
+                }
+            }
+            
+            response = requests.post(url, headers=headers, json=data)
+            response.raise_for_status()
+            
+            result = response.json()
+            if 'candidates' in result and len(result['candidates']) > 0:
+                content = result['candidates'][0]['content']['parts'][0]['text']
+                return self.extract_json_from_response(content)
+            else:
+                raise Exception("No response from Gemini API")
+                
+        except Exception as e:
+            print(f"Gemini analysis failed: {str(e)}")
+            return self.create_fallback_analysis("Gemini API error")
     
     def extract_json_from_response(self, content: str) -> Dict[str, Any]:
         """Extract JSON from AI response"""
