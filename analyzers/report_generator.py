@@ -258,6 +258,146 @@ class ReportGenerator:
         
         return insights
     
+    def generate_combined_dashboard_data(self, combined_data):
+        """Generate dashboard data from multiple file analyses"""
+        
+        # Combine insights from all analyses
+        all_summary_cards = []
+        all_charts = []
+        all_insights = []
+        
+        # Process spreadsheet analyses
+        for analysis in combined_data.get('spreadsheet_analyses', []):
+            cards = self._create_summary_cards(analysis)
+            charts = self._create_charts(analysis)
+            insights = self._generate_insights(analysis)
+            
+            # Add source file info to each item
+            for card in cards:
+                card['source_file'] = analysis.get('source_file', 'Unknown')
+            for chart in charts:
+                chart['source_file'] = analysis.get('source_file', 'Unknown')
+                chart['id'] = f"{chart['id']}_{analysis.get('source_file', 'unknown').replace('.', '_')}"
+            for insight in insights:
+                insight['source_file'] = analysis.get('source_file', 'Unknown')
+            
+            all_summary_cards.extend(cards)
+            all_charts.extend(charts)
+            all_insights.extend(insights)
+        
+        # Process document analyses
+        for analysis in combined_data.get('document_analyses', []):
+            ai_analysis = analysis.get('ai_analysis', {})
+            cards = self._create_document_summary_cards(ai_analysis)
+            charts = self._create_document_charts(ai_analysis)
+            insights = self._generate_document_insights(ai_analysis)
+            
+            # Add source file info
+            for card in cards:
+                card['source_file'] = analysis.get('source_file', 'Unknown')
+            for chart in charts:
+                chart['source_file'] = analysis.get('source_file', 'Unknown')
+                chart['id'] = f"{chart['id']}_{analysis.get('source_file', 'unknown').replace('.', '_')}"
+            for insight in insights:
+                insight['source_file'] = analysis.get('source_file', 'Unknown')
+            
+            all_summary_cards.extend(cards)
+            all_charts.extend(charts)
+            all_insights.extend(insights)
+        
+        # Create combined overview cards
+        combined_overview = self._create_combined_overview_cards(combined_data)
+        
+        # Add combined insights
+        combined_insights = self._generate_combined_insights(combined_data)
+        
+        dashboard_data = {
+            'summary_cards': combined_overview + all_summary_cards[:8],  # Limit total cards
+            'charts': all_charts[:6],  # Limit total charts
+            'insights': combined_insights + all_insights[:10],  # Limit total insights
+            'raw_data': combined_data,
+            'analysis_type': 'combined',
+            'files_processed': len(combined_data.get('file_info', [])),
+            'file_types': list(set(combined_data.get('analysis_types', [])))
+        }
+        
+        return dashboard_data
+    
+    def _create_combined_overview_cards(self, combined_data):
+        """Create overview cards for combined analysis"""
+        cards = []
+        
+        # Total files processed
+        total_files = len(combined_data.get('file_info', []))
+        cards.append({
+            'title': 'Files Processed',
+            'value': str(total_files),
+            'subtitle': 'Documents analyzed',
+            'icon': 'folder',
+            'source_file': 'Combined Analysis'
+        })
+        
+        # File types
+        file_types = list(set(combined_data.get('analysis_types', [])))
+        cards.append({
+            'title': 'File Types',
+            'value': str(len(file_types)),
+            'subtitle': ', '.join(file_types[:3]),
+            'icon': 'file-alt',
+            'source_file': 'Combined Analysis'
+        })
+        
+        # Total data size
+        total_size = sum(f.get('size', 0) for f in combined_data.get('file_info', []))
+        size_mb = total_size / (1024 * 1024)
+        cards.append({
+            'title': 'Data Volume',
+            'value': f"{size_mb:.1f} MB",
+            'subtitle': 'Total processed',
+            'icon': 'database',
+            'source_file': 'Combined Analysis'
+        })
+        
+        return cards
+    
+    def _generate_combined_insights(self, combined_data):
+        """Generate insights from combined analysis"""
+        insights = []
+        
+        # Multi-format analysis insight
+        spreadsheet_count = len(combined_data.get('spreadsheet_analyses', []))
+        document_count = len(combined_data.get('document_analyses', []))
+        
+        if spreadsheet_count > 0 and document_count > 0:
+            insights.append({
+                'type': 'success',
+                'title': 'Comprehensive Analysis',
+                'message': f"Successfully analyzed {spreadsheet_count} data files and {document_count} documents for complete project overview.",
+                'source_file': 'Combined Analysis'
+            })
+        
+        # File diversity insight
+        file_types = list(set(combined_data.get('analysis_types', [])))
+        if len(file_types) > 3:
+            insights.append({
+                'type': 'info',
+                'title': 'Diverse Data Sources',
+                'message': f"Analysis includes {len(file_types)} different file types: {', '.join(file_types)}",
+                'source_file': 'Combined Analysis'
+            })
+        
+        # Processing efficiency insight
+        total_files = len(combined_data.get('file_info', []))
+        if total_files > 5:
+            insights.append({
+                'type': 'success',
+                'title': 'Batch Processing',
+                'message': f"Efficiently processed {total_files} files in a single analysis batch.",
+                'source_file': 'Combined Analysis'
+            })
+        
+        return insights
+    
     def _create_document_summary_cards(self, ai_analysis):
         """Create summary cards for document analysis"""
         cards = []
