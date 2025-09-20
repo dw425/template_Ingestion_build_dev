@@ -101,3 +101,4 @@ def upload_multiple_files():
                     os.remove(f)
         
         return jsonify({'error': f'Multiple file analysis failed: {str(e)}'}), 500
+# adding multiple usint testing
