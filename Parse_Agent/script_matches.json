@@ -1,0 +1,226 @@
+{
+  "matched": [],
+  "unmatched": [
+    {
+      "processor": "Copy processed file to landingzone",
+      "reference": "/bin/hdfs"
+    },
+    {
+      "processor": "Move file to \"invalid\" folder",
+      "reference": "/bin/mv"
+    },
+    {
+      "processor": "Create HDFS landing folder",
+      "reference": "/bin/hdfs"
+    },
+    {
+      "processor": "Log current Kerberos info (klist)",
+      "reference": "/users/hadoop_nifi_svc/scripts/icn8/log_kerberos.sh"
+    },
+    {
+      "processor": "Move file to \"processing\" folder",
+      "reference": "/bin/mv"
+    },
+    {
+      "processor": "Move file to \"not_processed\" folder",
+      "reference": "/bin/mv"
+    },
+    {
+      "processor": "Refresh table in Impala",
+      "reference": "/bin/impala-shell"
+    },
+    {
+      "processor": "Call alternative loading script (non-klarf)",
+      "reference": "${alternative_load_script}"
+    },
+    {
+      "processor": "Call alternative loading script (klarf)",
+      "reference": "${alternative_load_script}"
+    },
+    {
+      "processor": "Execute direct insert query",
+      "reference": "/users/hadoop_nifi_svc/scripts/icn8/run_impala_query.sh"
+    },
+    {
+      "processor": "Refresh Kerberos ticket (kinit)",
+      "reference": "/bin/kinit"
+    },
+    {
+      "processor": "Run refresh statement",
+      "reference": "/bin/impala-shell"
+    },
+    {
+      "processor": "Move file to \"unknown\" folder",
+      "reference": "/bin/mv"
+    },
+    {
+      "processor": "Determine SWS lots",
+      "reference": "/bin/impala-shell"
+    },
+    {
+      "processor": "Determine if direct insert is possible",
+      "reference": "/bin/impala-shell"
+    },
+    {
+      "processor": "Acquire Token",
+      "reference": "/bin/impala-shell"
+    },
+    {
+      "processor": "Insert into NiFi log table (7)",
+      "reference": "/bin/impala-shell"
+    },
+    {
+      "processor": "LineCount (wc) of original file",
+      "reference": "/users/hadoop_nifi_svc/scripts/icn8/line_count.sh"
+    },
+    {
+      "processor": "Validate External Table Period (2)",
+      "reference": "/bin/impala-shell"
+    },
+    {
+      "processor": "Configure External Table (1)",
+      "reference": "/bin/impala-shell"
+    },
+    {
+      "processor": "LineCount (wc) of HDFS file",
+      "reference": "/users/hadoop_nifi_svc/scripts/icn8/line_count_hdfs.sh"
+    },
+    {
+      "processor": "Count external table (X)",
+      "reference": "/bin/impala-shell"
+    },
+    {
+      "processor": "Recover partitions (6)",
+      "reference": "/bin/impala-shell"
+    },
+    {
+      "processor": "Run script 'swap partitions'",
+      "reference": "/users/hadoop_nifi_svc/scripts/icn8/swap_partitions.sh"
+    },
+    {
+      "processor": "Run script 'swap partitions' (new)",
+      "reference": "/users/hadoop_nifi_svc/scripts/icn8/swap_partitions_new.sh"
+    },
+    {
+      "processor": "Analyze Staging (5)",
+      "reference": "/users/hadoop_nifi_svc/scripts/icn8/run_impala_query.sh"
+    },
+    {
+      "processor": "Run refresh statement",
+      "reference": "/bin/impala-shell"
+    },
+    {
+      "processor": "Refresh Kerberos ticket (kinit)",
+      "reference": "/bin/kinit"
+    },
+    {
+      "processor": "Run HDFS staging init command",
+      "reference": "/bin/hdfs"
+    },
+    {
+      "processor": "Ingest Staging (4)",
+      "reference": "/users/hadoop_nifi_svc/scripts/icn8/run_impala_query.sh"
+    },
+    {
+      "processor": "Initialize Staging (3)",
+      "reference": "/bin/impala-shell"
+    },
+    {
+      "processor": "Refresh Kerberos ticket (kinit)",
+      "reference": "/bin/kinit"
+    },
+    {
+      "processor": "Run refresh statement",
+      "reference": "/bin/impala-shell"
+    },
+    {
+      "processor": "Move processed file to not_in_stats folder",
+      "reference": "/bin/mv"
+    },
+    {
+      "processor": "Remove token from nifi_load_tokens",
+      "reference": "/bin/impala-shell"
+    },
+    {
+      "processor": "Determine flows to be reanimated",
+      "reference": "/bin/impala-shell"
+    },
+    {
+      "processor": "Update NiFi log table (7)",
+      "reference": "/bin/impala-shell"
+    },
+    {
+      "processor": "Insert (P)",
+      "reference": "/bin/impala-shell"
+    },
+    {
+      "processor": "List (all) scripts",
+      "reference": "/bin/impala-shell"
+    },
+    {
+      "processor": "List Scripts (S)",
+      "reference": "/bin/impala-shell"
+    },
+    {
+      "processor": "Determine manual trigger file names",
+      "reference": "/bin/impala-shell"
+    },
+    {
+      "processor": "Create trigger file in \"incoming\" folder",
+      "reference": "/users/hadoop_nifi_svc/scripts/icn8/create_trigger_file.sh"
+    },
+    {
+      "processor": "Determine trigger file names",
+      "reference": "/bin/impala-shell"
+    },
+    {
+      "processor": "Release token",
+      "reference": "/bin/impala-shell"
+    },
+    {
+      "processor": "Run Impala check query - NiFi Loading",
+      "reference": "/users/hadoop_nifi_svc/scripts/icn8/Impala_Check.sh"
+    },
+    {
+      "processor": "Clear not_in_stats folder",
+      "reference": "/users/hadoop_nifi_svc/scripts/icn8/clear_not_in_stats_folder.sh"
+    },
+    {
+      "processor": "Run Impala check query - PMI DQ",
+      "reference": "/users/hadoop_nifi_svc/scripts/icn8/Impala_Check.sh"
+    },
+    {
+      "processor": "Run Impala check query - PMI-View",
+      "reference": "/users/hadoop_nifi_svc/scripts/icn8/Impala_Check.sh"
+    },
+    {
+      "processor": "Execute Impala Query",
+      "reference": "/users/hadoop_nifi_svc/scripts/icn8/run_impala_query.sh"
+    },
+    {
+      "processor": "Remove cross check request file",
+      "reference": "/bin/rm"
+    },
+    {
+      "processor": "Run Impala check query - PMI DQ",
+      "reference": "/users/hadoop_nifi_svc/scripts/icn8/Impala_Check.sh"
+    },
+    {
+      "processor": "Execute Hive Query",
+      "reference": "/bin/beeline"
+    },
+    {
+      "processor": "PMI-View logging to table - shell script",
+      "reference": "/users/hadoop_nifi_svc/scripts/icn8/PMI-View_logging_to_table.sh"
+    },
+    {
+      "processor": "Run refresh statement",
+      "reference": "/bin/impala-shell"
+    },
+    {
+      "processor": "Refresh Kerberos ticket (kinit)",
+      "reference": "/bin/kinit"
+    }
+  ],
+  "ambiguous": []
+}

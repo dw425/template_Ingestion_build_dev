@@ -1,0 +1,784 @@
+{
+  "nodes": [
+    {
+      "id": "2676f21a-d254-3b27-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Copy processed file to landingzone",
+      "properties": {
+        "Command Path": "/bin/hdfs",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "dfs;-put;-f;/etl/dropzone/icn8/processing/${filename};${landingzone-final}/${generated_day:substring(0,4)}/${generated_day:substring(4,6)}-${generated_day:substring(6,8)}/",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "3b288ab0-7da2-3ad4-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Move file to \"invalid\" folder",
+      "properties": {
+        "Command Path": "/bin/mv",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "/etl/dropzone/icn8/processing/${filename};/etl/dropzone/icn8/invalid/",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "true",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "3bffc47e-9b9f-3c3e-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Create HDFS landing folder",
+      "properties": {
+        "Command Path": "/bin/hdfs",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "dfs;-mkdir;-p;${landingzone-final}/${generated_day:substring(0,4)}/${generated_day:substring(4,6)}-${generated_day:substring(6,8)}",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "773f42a4-ab91-3680-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Log current Kerberos info (klist)",
+      "properties": {
+        "Command Path": "/users/hadoop_nifi_svc/scripts/icn8/log_kerberos.sh",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "manual",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "98707407-02c4-3ded-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Move file to \"processing\" folder",
+      "properties": {
+        "Command Path": "/bin/mv",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "/etl/dropzone/icn8/incoming/${filename};/etl/dropzone/icn8/processing/",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "true",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "acc6fcc9-e238-3537-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Move file to \"not_processed\" folder",
+      "properties": {
+        "Command Path": "/bin/mv",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "/etl/dropzone/icn8/processing/${filename};/etl/dropzone/icn8/not_processed/",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "true",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "aed1e492-fc99-361e-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Refresh table in Impala",
+      "properties": {
+        "Command Path": "/bin/impala-shell",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "-B;-k;-i;nardc02prod-impala.na-rdc02.nxp.com;-q;\"refresh ${prod_table};\"",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "dabdb3f9-8f4a-318f-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Call alternative loading script (non-klarf)",
+      "properties": {
+        "Command Path": "${alternative_load_script}",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "${alternative_load_script_arguments}",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "true",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "ee1c70bc-fab0-3e61-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Call alternative loading script (klarf)",
+      "properties": {
+        "Command Path": "${alternative_load_script}",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "${alternative_load_script_arguments}",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "true",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "9607fc1c-18e0-33b4-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Execute direct insert query",
+      "properties": {
+        "Command Path": "/users/hadoop_nifi_svc/scripts/icn8/run_impala_query.sh",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "-B;-k;-i;nardc02prod-impala.na-rdc02.nxp.com;--quiet;-q;\"\nset mem_limit=${impala_mem_limit}G;\n${direct_insert_query}\n\"",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "true",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "3c4402b7-5034-3f3f-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Refresh Kerberos ticket (kinit)",
+      "properties": {
+        "Command Path": "/bin/kinit",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "-kt;/etc/security/keytab/hadoop_nifi_svc.keytab;hadoop_nifi_svc",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "c6ed9246-ad55-3c97-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Run refresh statement",
+      "properties": {
+        "Command Path": "/bin/impala-shell",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "-B;-k;-i;nardc02prod-impala.na-rdc02.nxp.com;-q;\"${refresh_statement}\"",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "3d445ae5-29c5-3711-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Move file to \"unknown\" folder",
+      "properties": {
+        "Command Path": "/bin/mv",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "/etl/dropzone/icn8/processing/${filename};/etl/dropzone/icn8/unknown/",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "8714dc28-1a1f-3c5b-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Determine SWS lots",
+      "properties": {
+        "Command Path": "/bin/impala-shell",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "-B;-k;-i;nardc02prod-impala.na-rdc02.nxp.com;-q;\"\n-- ICN8/NiFi/SWS/DetLots\nselect\n  nvl (concat ('(', group_concat (subq1.lot, ', '), ')')\n      , '(\\'\\')'\n      )                                                   lots\nfrom\n  (\n    select distinct\n      concat ('\\'', substr (scp.lot, 1, 6), '\\'')  lot\n    from\n      mfg_icn8_data.nifi_scrap  scp\n    where\n          scp.scrap_cet_ts >= '${valid_from}'\n      and scp.scrap_cet_ts  < '${valid_to}'\n  )  subq1\n;\n\"",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "true",
+        "Output Destination Attribute": "sws_lots",
+        "Max Attribute Length": "8192"
+      }
+    },
+    {
+      "id": "aef4b39b-37f0-34fa-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Determine if direct insert is possible",
+      "properties": {
+        "Command Path": "/bin/impala-shell",
+        "argumentsStrategy": "Command Arguments Property",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Output Destination Attribute": "direct_insert_possible_yn",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "c1970421-7b62-3c53-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Acquire Token",
+      "properties": {
+        "Command Path": "/bin/impala-shell",
+        "argumentsStrategy": "Command Arguments Property",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Output Destination Attribute": "token_acquired",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "a1ad85dc-617c-3a19-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Insert into NiFi log table (7)",
+      "properties": {
+        "Command Path": "/bin/impala-shell",
+        "argumentsStrategy": "Command Arguments Property",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "true",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "105bcba3-e7ef-31ff-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "LineCount (wc) of original file",
+      "properties": {
+        "Command Path": "/users/hadoop_nifi_svc/scripts/icn8/line_count.sh",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "/etl/dropzone/icn8/processing/${filename}",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Output Destination Attribute": "org_line_count",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "3438d1bf-1ac3-37e2-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Validate External Table Period (2)",
+      "properties": {
+        "Command Path": "/bin/impala-shell",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "-B;-k;-i;nardc02prod-impala.na-rdc02.nxp.com;-q;\"${query_2_validateExternalTable}\"",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "true",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "3657635d-961e-30c5-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Configure External Table (1)",
+      "properties": {
+        "Command Path": "/bin/impala-shell",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "-B;-k;-i;nardc02prod-impala.na-rdc02.nxp.com;-q;\"${query_1_configureExternalTable}\"",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "true",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "39d11209-1ffb-30ff-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "LineCount (wc) of HDFS file",
+      "properties": {
+        "Command Path": "/users/hadoop_nifi_svc/scripts/icn8/line_count_hdfs.sh",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "${landingzone}/${filename}",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Output Destination Attribute": "hdfs_line_count",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "f059f2af-2093-3302-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Count external table (X)",
+      "properties": {
+        "Command Path": "/bin/impala-shell",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "-B;-k;-i;nardc02prod-impala.na-rdc02.nxp.com;-q;\"\n-- ICN8/NiFi/PrepFile/CountExtTab\nREFRESH ${external_table}; \nSELECT CONCAT (CAST (COUNT(*) AS STRING) , ']') FROM ${external_table} ${ext_table_count_where_clause}\n\"",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "true",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "3b1b22a2-9d2a-3ff2-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Recover partitions (6)",
+      "properties": {
+        "Command Path": "/bin/impala-shell",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "-B;-k;-i;nardc02prod-impala.na-rdc02.nxp.com;-q;\"\n-- ICN8/NiFi/ExecPartSwap/RecovPart\nALTER TABLE ${prod_table} RECOVER PARTITIONS;\n\"",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "true",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "539f2bf7-22c8-36e4-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Run script 'swap partitions'",
+      "properties": {
+        "Working Directory": "/users/hadoop_nifi_svc/scripts/icn8/",
+        "Command Path": "/users/hadoop_nifi_svc/scripts/icn8/swap_partitions.sh",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "${script_parameters}",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "true",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "d03b0476-b1ee-3dcf-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Run script 'swap partitions' (new)",
+      "properties": {
+        "Working Directory": "/users/hadoop_nifi_svc/scripts/icn8/",
+        "Command Path": "/users/hadoop_nifi_svc/scripts/icn8/swap_partitions_new.sh",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "\"${prod_location}${swap_main_partition}\";\"${staging_location}${swap_main_partition}\";\"${valid_from}\";\"${valid_to}\";\"${inner_partition}\";\"${logtype}\"\n",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "true",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "d69a02a3-4a5a-340b-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Analyze Staging (5)",
+      "properties": {
+        "Command Path": "/users/hadoop_nifi_svc/scripts/icn8/run_impala_query.sh",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "-B;-k;-i;nardc02prod-impala.na-rdc02.nxp.com;-q;\"${query_5_analyzeStaging}\"",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "true",
+        "Output Destination Attribute": "script_parameters",
+        "Max Attribute Length": "8192"
+      }
+    },
+    {
+      "id": "42842035-ae6b-3fd4-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Run refresh statement",
+      "properties": {
+        "Command Path": "/bin/impala-shell",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "-B;-k;-i;nardc02prod-impala.na-rdc02.nxp.com;-q;\"${refresh_statement}\"",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "da21adee-cd56-3f21-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Refresh Kerberos ticket (kinit)",
+      "properties": {
+        "Command Path": "/bin/kinit",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "-kt;/etc/security/keytab/hadoop_nifi_svc.keytab;hadoop_nifi_svc",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "471b28d7-c247-3ae5-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Run HDFS staging init command",
+      "properties": {
+        "Command Path": "/bin/hdfs",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "dfs;${init_staging_hdfs_command_args}",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "b8becc90-1522-3afd-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Ingest Staging (4)",
+      "properties": {
+        "Command Path": "/users/hadoop_nifi_svc/scripts/icn8/run_impala_query.sh",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "-B;-k;-i;nardc02prod-impala.na-rdc02.nxp.com;--quiet;-q;\"\nset mem_limit=${impala_mem_limit}G;\n${query_4_ingestStaging}\n\"",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "true",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "d0a5645b-56fb-34a8-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Initialize Staging (3)",
+      "properties": {
+        "Command Path": "/bin/impala-shell",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "-B;-k;-i;nardc02prod-impala.na-rdc02.nxp.com;-q;\"${query_3_initializeStaging}\"",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "true",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "15882a04-c233-3b96-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Refresh Kerberos ticket (kinit)",
+      "properties": {
+        "Command Path": "/bin/kinit",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "-kt;/etc/security/keytab/hadoop_nifi_svc.keytab;hadoop_nifi_svc",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "aba71d97-16a0-33ee-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Run refresh statement",
+      "properties": {
+        "Command Path": "/bin/impala-shell",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "-B;-k;-i;nardc02prod-impala.na-rdc02.nxp.com;-q;\"${refresh_statement}\"",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "09d96d7d-3bd1-3ca3-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Move processed file to not_in_stats folder",
+      "properties": {
+        "Command Path": "/bin/mv",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "/etl/dropzone/icn8/processing/${filename};/etl/dropzone/icn8/not_in_stats/",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "a6125001-0fdd-3d23-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Remove token from nifi_load_tokens",
+      "properties": {
+        "Command Path": "/bin/impala-shell",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "-B;-k;-i;nardc02prod-impala.na-rdc02.nxp.com;-q;\"\n-- ICN8/NiFi/ReanimFlows/RemoveToken\ndelete from\n  mfg_icn8_data.nifi_load_tokens\nwhere\n      token        = '${logtype}'\n  and token_cet_ts < '${idleness_limit_time}'\n;\n\"",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "d743fdb8-50c1-3f13-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Determine flows to be reanimated",
+      "properties": {
+        "Command Path": "/bin/impala-shell",
+        "argumentsStrategy": "Command Arguments Property",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "b1fd905f-3aa1-3a2b-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Update NiFi log table (7)",
+      "properties": {
+        "Command Path": "/bin/impala-shell",
+        "argumentsStrategy": "Command Arguments Property",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "true",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "19ae98cf-9399-3384-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Insert (P)",
+      "properties": {
+        "Command Path": "/bin/impala-shell",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "-B;-k;-i;nardc02prod-impala.na-rdc02.nxp.com;-q;\"\n${query_insert}\n\"",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "true",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "2920d588-4711-331f-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "List (all) scripts",
+      "properties": {
+        "Command Path": "/bin/impala-shell",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "-B;-k;-i;nardc02hdpep01v.na-rdc02.nxp.com;-q;\"\n-- ICN8/NiFi/DetDepAgg/ListAllScripts\nSELECT DISTINCT entity FROM mfg_icn8_data.nifi_load_dependencies;\n\"",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "true",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "82a4b00a-c22c-37e1-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "List Scripts (S)",
+      "properties": {
+        "Command Path": "/bin/impala-shell",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "-B;-k;-i;nardc02prod-impala.na-rdc02.nxp.com;-q;\"\n-- ICN8/NiFi/DetDepAgg/ListScripts\nSELECT DISTINCT entity FROM mfg_icn8_data.nifi_load_dependencies WHERE depends_on_entity = '${logtype}';\n\"",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "true",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "bacd9c98-0604-3b1e-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Determine manual trigger file names",
+      "properties": {
+        "Command Path": "/bin/impala-shell",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "-B;-k;-i;nardc02prod-impala.na-rdc02.nxp.com;-q;\"\nselect\n  nll.filename\nfrom\n  mfg_icn8_data.nifi_load_log  nll\nwhere\n      nll.target_entity = '${entity}'\n  and nll.processed_cet_ts = ''\n;\n\"",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "dff54cf4-136e-35ea-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Create trigger file in \"incoming\" folder",
+      "properties": {
+        "Command Path": "/users/hadoop_nifi_svc/scripts/icn8/create_trigger_file.sh",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "${aggr_filename}",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "f3e85cbd-52cd-3966-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Determine trigger file names",
+      "properties": {
+        "Command Path": "/bin/impala-shell",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "-B;-k;-i;nardc02prod-impala.na-rdc02.nxp.com;-q;\"\n-- ICN8/NiFi/DetDepAgg/DetTrgNms\nselect\n  nll.filename\nfrom\n  mfg_icn8_data.nifi_load_log  nll\nwhere\n      nll.target_entity = '${entity}'\n  and nll.insert_cet_ts = '${determine_work_ts}'\n;\n\"",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "41b4c8b6-0b66-3286-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Release token",
+      "properties": {
+        "Command Path": "/bin/impala-shell",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "-B;-k;-i;nardc02prod-impala.na-rdc02.nxp.com;-q;\"\nset mem_limit=100M;\nset request_pool = root.default;\n\n-- ICN8/NiFi/ReleaseToken\ndelete from\n  mfg_icn8_data.nifi_load_tokens\nwhere\n      token    = '${logtype}'\n  and filename = '${filename}'\n;\n\"",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "1e44c21b-198e-3a72-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Run Impala check query - NiFi Loading",
+      "properties": {
+        "Command Path": "/users/hadoop_nifi_svc/scripts/icn8/Impala_Check.sh",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "NiFi_Loading",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "3787d15d-0e5e-3f38-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Clear not_in_stats folder",
+      "properties": {
+        "Working Directory": "/users/hadoop_nifi_svc/scripts/icn8/",
+        "Command Path": "/users/hadoop_nifi_svc/scripts/icn8/clear_not_in_stats_folder.sh",
+        "argumentsStrategy": "Command Arguments Property",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "true",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "49ecc230-ff21-3624-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Run Impala check query - PMI DQ",
+      "properties": {
+        "Command Path": "/users/hadoop_nifi_svc/scripts/icn8/Impala_Check.sh",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "PMI_View_default_queue",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "9eb9be7d-fe66-3918-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Run Impala check query - PMI-View",
+      "properties": {
+        "Command Path": "/users/hadoop_nifi_svc/scripts/icn8/Impala_Check.sh",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "PMI_View",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "a8a421a4-c2b2-3238-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Execute Impala Query",
+      "properties": {
+        "Command Path": "/users/hadoop_nifi_svc/scripts/icn8/run_impala_query.sh",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "-i;nardc02prod-impala.na-rdc02.nxp.com;-B;--query=\"\nset request_pool=root.default;\nset mem_limit=${impala_mem_limit}G;\n${query}\n\";--print_header;--output_delimiter=,",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "bad1b892-4d95-3bf6-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Remove cross check request file",
+      "properties": {
+        "Command Path": "/bin/rm",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "-f;/etl/dropzone/icn8/incoming/${filename}",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "true",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "c6ede933-b788-3df3-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Run Impala check query - PMI DQ",
+      "properties": {
+        "Command Path": "/users/hadoop_nifi_svc/scripts/icn8/Impala_Check.sh",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "PMI_View_interactive_queue",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "cbdf3759-051e-3150-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Execute Hive Query",
+      "properties": {
+        "Command Path": "/bin/beeline",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "--outputformat=csv2;-e;\"${query}\"",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "f4b339bf-18f0-3af0-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "PMI-View logging to table - shell script",
+      "properties": {
+        "Command Path": "/users/hadoop_nifi_svc/scripts/icn8/PMI-View_logging_to_table.sh",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "NiFi_Loading",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "7a3269e4-1d39-3532-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Run refresh statement",
+      "properties": {
+        "Command Path": "/bin/impala-shell",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "-B;-k;-i;nardc02prod-impala.na-rdc02.nxp.com;-q;\"${refresh_statement}\"",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Max Attribute Length": "256"
+      }
+    },
+    {
+      "id": "a083e92d-ca5f-342d-0000-000000000000",
+      "type": "nifi_processor",
+      "name": "Refresh Kerberos ticket (kinit)",
+      "properties": {
+        "Command Path": "/bin/kinit",
+        "argumentsStrategy": "Command Arguments Property",
+        "Command Arguments": "-kt;/etc/security/keytab/hadoop_nifi_svc.keytab;hadoop_nifi_svc",
+        "Argument Delimiter": ";",
+        "Ignore STDIN": "false",
+        "Max Attribute Length": "256"
+      }
+    }
+  ],
+  "edges": [],
+  "layers": {
+    "nifi_processors": [
+      "2676f21a-d254-3b27-0000-000000000000",
+      "3b288ab0-7da2-3ad4-0000-000000000000",
+      "3bffc47e-9b9f-3c3e-0000-000000000000",
+      "773f42a4-ab91-3680-0000-000000000000",
+      "98707407-02c4-3ded-0000-000000000000",
+      "acc6fcc9-e238-3537-0000-000000000000",
+      "aed1e492-fc99-361e-0000-000000000000",
+      "dabdb3f9-8f4a-318f-0000-000000000000",
+      "ee1c70bc-fab0-3e61-0000-000000000000",
+      "9607fc1c-18e0-33b4-0000-000000000000",
+      "3c4402b7-5034-3f3f-0000-000000000000",
+      "c6ed9246-ad55-3c97-0000-000000000000",
+      "3d445ae5-29c5-3711-0000-000000000000",
+      "8714dc28-1a1f-3c5b-0000-000000000000",
+      "aef4b39b-37f0-34fa-0000-000000000000",
+      "c1970421-7b62-3c53-0000-000000000000",
+      "a1ad85dc-617c-3a19-0000-000000000000",
+      "105bcba3-e7ef-31ff-0000-000000000000",
+      "3438d1bf-1ac3-37e2-0000-000000000000",
+      "3657635d-961e-30c5-0000-000000000000",
+      "39d11209-1ffb-30ff-0000-000000000000",
+      "f059f2af-2093-3302-0000-000000000000",
+      "3b1b22a2-9d2a-3ff2-0000-000000000000",
+      "539f2bf7-22c8-36e4-0000-000000000000",
+      "d03b0476-b1ee-3dcf-0000-000000000000",
+      "d69a02a3-4a5a-340b-0000-000000000000",
+      "42842035-ae6b-3fd4-0000-000000000000",
+      "da21adee-cd56-3f21-0000-000000000000",
+      "471b28d7-c247-3ae5-0000-000000000000",
+      "b8becc90-1522-3afd-0000-000000000000",
+      "d0a5645b-56fb-34a8-0000-000000000000",
+      "15882a04-c233-3b96-0000-000000000000",
+      "aba71d97-16a0-33ee-0000-000000000000",
+      "09d96d7d-3bd1-3ca3-0000-000000000000",
+      "a6125001-0fdd-3d23-0000-000000000000",
+      "d743fdb8-50c1-3f13-0000-000000000000",
+      "b1fd905f-3aa1-3a2b-0000-000000000000",
+      "19ae98cf-9399-3384-0000-000000000000",
+      "2920d588-4711-331f-0000-000000000000",
+      "82a4b00a-c22c-37e1-0000-000000000000",
+      "bacd9c98-0604-3b1e-0000-000000000000",
+      "dff54cf4-136e-35ea-0000-000000000000",
+      "f3e85cbd-52cd-3966-0000-000000000000",
+      "41b4c8b6-0b66-3286-0000-000000000000",
+      "1e44c21b-198e-3a72-0000-000000000000",
+      "3787d15d-0e5e-3f38-0000-000000000000",
+      "49ecc230-ff21-3624-0000-000000000000",
+      "9eb9be7d-fe66-3918-0000-000000000000",
+      "a8a421a4-c2b2-3238-0000-000000000000",
+      "bad1b892-4d95-3bf6-0000-000000000000",
+      "c6ede933-b788-3df3-0000-000000000000",
+      "cbdf3759-051e-3150-0000-000000000000",
+      "f4b339bf-18f0-3af0-0000-000000000000",
+      "7a3269e4-1d39-3532-0000-000000000000",
+      "a083e92d-ca5f-342d-0000-000000000000"
+    ],
+    "scripts": [],
+    "database_objects": []
+  }
+}

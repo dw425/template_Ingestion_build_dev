@@ -1,0 +1,18 @@
+{
+  "scripts_analyzed": 0,
+  "inline_scripts": [],
+  "external_scripts": [],
+  "operations_summary": {
+    "impala": 0,
+    "kudu": 0,
+    "hdfs": 0,
+    "hive": 0
+  },
+  "tables_referenced": {},
+  "connections_found": [],
+  "complexity_distribution": {
+    "HIGH": 0,
+    "MEDIUM": 0,
+    "LOW": 0
+  }
+}
